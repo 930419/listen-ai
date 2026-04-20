@@ -1,0 +1,38 @@
+services:
+  stat:
+    build: ./stat
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./data:/data
+    environment:
+      - STAT_PORT=8002
+      - SQLITE_PATH=/data/listenai.db
+
+  nlp:
+    build: ./nlp
+    ports:
+      - "8001:8001"
+    environment:
+      - NLP_PORT=8001
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - GATEWAY_PORT=8000
+      - STAT_URL=http://stat:8002
+      - NLP_URL=http://nlp:8001
+    depends_on:
+      - stat
+      - nlp
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+    depends_on:
+      - gateway
